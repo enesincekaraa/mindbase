@@ -1,0 +1,8 @@
+### /api/load-data
+
+GET http://localhost:8080/api/load-data
+
+
+### /api/ask?question=Şirkette uzaktan çalışma hakkım var mı?
+
+GET http://localhost:8080/api/ask?question=Şirkette uzaktan çalışma hakkım var mı?

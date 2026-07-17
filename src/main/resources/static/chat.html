@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #log { scroll-behavior: smooth; }
+        .typing-indicator { display: none; font-size: 0.8rem; color: #6b7280; margin-left: 10px; }
+    </style>
+</head>
+<body class="bg-gray-900 h-screen flex flex-col">
+
+<!-- Header -->
+<header class="bg-gray-800 p-4 shadow-md flex items-center justify-between">
+    <h1 class="text-blue-400 font-bold text-xl flex items-center">
+        <span class="mr-2">⚡</span> Mindbase AI
+    </h1>
+    <div id="status" class="text-xs text-green-500 font-mono">● Online</div>
+</header>
+
+<!-- Chat Log -->
+<div id="log" class="flex-1 p-6 overflow-y-auto space-y-4 max-w-3xl mx-auto w-full"></div>
+
+<!-- Input Area -->
+<div class="p-4 bg-gray-800 border-t border-gray-700">
+    <div class="max-w-3xl mx-auto relative">
+        <div id="typing" class="typing-indicator absolute -top-6">AI yazıyor...</div>
+        <div class="flex gap-3">
+            <input id="msg" type="text" class="flex-1 bg-gray-700 text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Kurumsal soru sor...">
+            <button onclick="send()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-500 transition">Gönder</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socket = new WebSocket("ws://localhost:8080/ai-chat");
+    const log = document.getElementById("log");
+    const typing = document.getElementById("typing");
+
+    socket.onopen = () => document.getElementById("status").innerText = "● Bağlandı";
+
+    socket.onmessage = function(event) {
+        typing.style.display = 'none';
+        log.innerHTML += `<div class="p-4 bg-gray-700 text-white rounded-lg rounded-tl-none max-w-[80%]"><b>AI:</b> ${event.data}</div>`;
+        log.scrollTop = log.scrollHeight;
+    };
+
+    function send() {
+        const input = document.getElementById("msg");
+        if(!input.value) return;
+
+        socket.send(input.value);
+        log.innerHTML += `<div class="p-4 bg-blue-600 text-white rounded-lg rounded-tr-none max-w-[80%] ml-auto"><b>Sen:</b> ${input.value}</div>`;
+        input.value = '';
+        typing.style.display = 'block';
+        log.scrollTop = log.scrollHeight;
+    }
+</script>
+</body>
+</html>

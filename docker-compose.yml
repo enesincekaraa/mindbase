@@ -1,11 +1,26 @@
 services:
-  pgvector-db:
+  postgres-vector:
     image: pgvector/pgvector:pg16
-    container_name: mindbase-vector-db
-    ports:
-      - "5432:5432"
+    container_name: mindbase-db
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: rootpassword
       POSTGRES_DB: mindbase_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - mindbase_pgdata:/var/lib/postgresql/data
     restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mindbase-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - mindbase_ollama_data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  mindbase_pgdata:
+  mindbase_ollama_data:
