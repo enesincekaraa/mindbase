@@ -1,0 +1,11 @@
+services:
+  pgvector-db:
+    image: pgvector/pgvector:pg16
+    container_name: mindbase-vector-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: mindbase_db
+    restart: unless-stopped
