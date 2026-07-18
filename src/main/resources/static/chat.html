@@ -15,6 +15,11 @@
     <h1 class="text-blue-400 font-bold text-xl flex items-center">
         <span class="mr-2">⚡</span> Mindbase AI
     </h1>
+    <!-- Kurum Kimliği Girdisi -->
+    <div class="flex items-center gap-2">
+        <span class="text-gray-400 text-sm">Kurum Kimliği:</span>
+        <input id="tenantId" type="text" class="bg-gray-700 text-white p-1 px-2 rounded outline-none text-sm border border-gray-600 focus:border-blue-500" value="global-tech-123">
+    </div>
     <div id="status" class="text-xs text-green-500 font-mono">● Online</div>
 </header>
 
@@ -47,9 +52,22 @@
 
     function send() {
         const input = document.getElementById("msg");
-        if(!input.value) return;
+        const tenantInput = document.getElementById("tenantId");
 
-        socket.send(input.value);
+        if(!input.value) return;
+        if(!tenantInput.value) {
+            alert("Lütfen bir Kurum Kimliği (Tenant ID) girin!");
+            return;
+        }
+
+        // Veriyi düz metin yerine JSON olarak paketliyoruz
+        const payload = {
+            question: input.value,
+            tenantId: tenantInput.value
+        };
+
+        socket.send(JSON.stringify(payload)); // JSON formatında fırlatıyoruz
+
         log.innerHTML += `<div class="p-4 bg-blue-600 text-white rounded-lg rounded-tr-none max-w-[80%] ml-auto"><b>Sen:</b> ${input.value}</div>`;
         input.value = '';
         typing.style.display = 'block';

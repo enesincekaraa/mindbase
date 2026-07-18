@@ -1,0 +1,5 @@
+Global Teknoloji A.Ş. Mühendislik ve Operasyon Standartları:
+Mikroservisler arası tüm asenkron iletişim ve olay güdümlü (event-driven) mimarilerde standart mesaj broker'ımız RabbitMQ'dur.
+Geliştirilen tüm yeni servislerde Spring Boot altyapısı kullanılmalı ve projeler kesinlikle Domain-Driven Design (DDD) prensiplerine uygun olarak klasörlenmelidir.
+İş zekası ve kurumsal raporlama süreçleri için yazılan karmaşık SQL sorguları, doğrudan Qlik Sense panelleriyle uyumlu çalışacak standartlarda hazırlanmalıdır.
+API uç noktalarının aşırı yüklenmesini engellemek amacıyla, projelerde manuel yazılmış mapper bileşenleri tercih edilmeli ve Bucket4j kütüphanesi kullanılarak rate-limiting (hız sınırlandırma) politikaları zorunlu olarak uygulanmalıdır.

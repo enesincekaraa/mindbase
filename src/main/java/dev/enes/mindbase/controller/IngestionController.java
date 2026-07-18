@@ -1,39 +1,51 @@
 package dev.enes.mindbase.controller;
 
+import dev.enes.mindbase.service.DocumentIngestionService;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
 
 @RestController
+@RequestMapping("/api/documents")
 public class IngestionController {
 
     private final VectorStore vectorStore;
-    public IngestionController(VectorStore vectorStore) {
+    private final DocumentIngestionService ingestionService;
+    public IngestionController(VectorStore vectorStore, DocumentIngestionService ingestionService) {
         this.vectorStore = vectorStore;
+        this.ingestionService = ingestionService;
     }
 
-    @GetMapping("/api/load-data")
-    public String loadData() {
-        String companyRules = "Mindbase Şirket Kuralları: Şirketimizde standart mesai saatleri sabah 09:00 ile akşam 18:00 arasındadır. " +
-                "Öğle molası 12:30 ile 13:30 saatleri arasındadır. Tüm çalışanların haftada 2 gün uzaktan (remote) çalışma hakkı bulunmaktadır. " +
-                "Yıllık ücretli izin hakkı, şirkette 1. yılını dolduran her çalışan için 14 iş günüdür. " +
-                "Donanım (bilgisayar vb.) arızalarında doğrudan IT departmanına talep açılmalıdır.";
 
+    @GetMapping("/load-local")
+    public ResponseEntity<String> loadLocalData() throws IOException {
 
-        Document document = new Document(companyRules);
+        try {
+            int chunkSize = ingestionService.loadRulesFromFile();
 
+            return ResponseEntity.ok("Sistemdeki 'kurallar.txt' başarıyla eklendi. Parça: " + chunkSize);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Yerel dosya okunurken hata oluştu: " + e.getMessage());
+        }
 
-        TokenTextSplitter splitter = new TokenTextSplitter();
-
-        List<Document> chunks = splitter.apply(List.of(document));
-
-        vectorStore.accept(chunks);
-
-        return "Başarılı! Veriler parçalandı, yapay zeka vektörlerine çevrildi ve veritabanına kaydedildi. Oluşan Parça Sayısı: " + chunks.size();
     }
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadData(@RequestParam("file") MultipartFile file) {
+            try {
+                int chunkSize = ingestionService.processAndStoreFile(file);
+                return ResponseEntity.ok("Dışarıdan gelen dosya başarıyla işlendi! Parça: " + chunkSize);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Dosya işlenirken hata oluştu: " + e.getMessage());
+            }
+    }
+
 
 }

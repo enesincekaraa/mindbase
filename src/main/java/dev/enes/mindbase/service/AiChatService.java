@@ -1,6 +1,9 @@
 package dev.enes.mindbase.service;
 
 
+import dev.enes.mindbase.context.TenantContext;
+import dev.enes.mindbase.dto.ChatResponse;
+import dev.enes.mindbase.mapper.ChatMapper;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
@@ -26,13 +29,14 @@ public class AiChatService {
 
 
     @Async
-    public CompletableFuture<String> askQuestionAsync(String question) {
-        List<Document> similarDocument = vectorStore
+    public CompletableFuture<String> askQuestionAsync(String question,String tenantId) {
+        List<Document> similarDocuments = vectorStore
                 .similaritySearch(SearchRequest
                         .query(question)
-                        .withTopK(1));
+                        .withTopK(1)
+                        .withFilterExpression("tenantId == '" + tenantId + "'"));
 
-        String context = similarDocument.stream()
+        String context = similarDocuments.stream()
                 .map(Document::getContent)
                 .collect(Collectors.joining("\n\n"));
 
@@ -43,25 +47,30 @@ public class AiChatService {
                 .content();
 
         return CompletableFuture.completedFuture(answer);
-
-
     }
 
-    public String askQuestion(String question) {
-        List<Document> similarDocument = vectorStore
+    public ChatResponse askQuestion(String question) {
+
+        String tenantId = TenantContext.getTenantId();
+
+        List<Document> similarDocuments = vectorStore
                 .similaritySearch(SearchRequest
                         .query(question)
-                        .withTopK(1));
+                        .withTopK(1)
+                        .withFilterExpression("tenantId == '" + tenantId + "'"));
 
-        String context = similarDocument.stream()
+
+        String context = similarDocuments.stream()
                 .map(Document::getContent)
                 .collect(Collectors.joining("\n\n"));
 
-        return chatClient.prompt()
+        String aiAnswer =  chatClient.prompt()
                 .system(s -> s.text("Sadece şu bağlamı kullan: {context}").param("context", context))
                 .user(question)
                 .call()
                 .content();
+
+        return ChatMapper.toResponse(aiAnswer,tenantId);
     }
 
 }
