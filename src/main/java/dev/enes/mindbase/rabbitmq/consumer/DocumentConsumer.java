@@ -21,16 +21,16 @@ public class DocumentConsumer {
         this.vectorStore = vectorStore;
     }
 
-    @RabbitListener(queues = RabbitMQConfig.DOCUMENT_QUEUE)
+    @RabbitListener(queues = "${RABBITMQ_QUEUE}")
     public void consumeDocumentAndStore(DocumentMessage message) {
         System.out.println("⏳ Kuyruktan dosya alındı, işleniyor... Dosya: " + message.fileName());
 
         try {
 
             // --- TEST İÇİN EKLENEN BOMBA ---
-            if (message.content().contains("BOMBA")) {
-                throw new RuntimeException("Sistem bilerek patlatıldı!");
-            }
+//            if (message.content().contains("BOMBA")) {
+//                throw new RuntimeException("Sistem bilerek patlatıldı!");
+//            }
             Document document = new Document(
                     message.content(),
                     Map.of("tenantId",message.tenantId()));
