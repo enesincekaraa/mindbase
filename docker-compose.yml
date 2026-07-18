@@ -3,8 +3,8 @@ services:
     image: pgvector/pgvector:pg16
     container_name: mindbase-db
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: mindbase_db
     ports:
       - "5432:5432"
@@ -21,6 +21,20 @@ services:
       - mindbase_ollama_data:/root/.ollama
     restart: unless-stopped
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: mindbase-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - mindbase_rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
 volumes:
   mindbase_pgdata:
   mindbase_ollama_data:
+  mindbase_rabbitmq_data:

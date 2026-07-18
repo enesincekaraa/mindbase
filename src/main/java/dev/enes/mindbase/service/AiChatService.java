@@ -3,7 +3,7 @@ package dev.enes.mindbase.service;
 
 import dev.enes.mindbase.context.TenantContext;
 import dev.enes.mindbase.dto.ChatResponse;
-import dev.enes.mindbase.mapper.ChatMapper;
+import dev.enes.mindbase.config.mapper.ChatMapper;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;

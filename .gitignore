@@ -35,4 +35,4 @@ build/
 .env
 .env.local
 
-src/main/resources/kurallar.txt
+src/main/resources/kurallar

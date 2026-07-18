@@ -1,4 +1,4 @@
-package dev.enes.mindbase.mapper;
+package dev.enes.mindbase.config.mapper;
 
 import dev.enes.mindbase.dto.ChatResponse;
 

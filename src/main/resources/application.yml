@@ -22,3 +22,10 @@ spring:
         index-type: HNSW
         distance-type: COSINE_DISTANCE
         dimensions: 384
+
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}

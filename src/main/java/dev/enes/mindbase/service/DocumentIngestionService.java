@@ -1,56 +1,33 @@
 package dev.enes.mindbase.service;
 
-
 import dev.enes.mindbase.context.TenantContext;
-import org.springframework.ai.document.Document;
-import org.springframework.ai.reader.TextReader;
-import org.springframework.ai.transformer.splitter.TokenTextSplitter;
-import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import dev.enes.mindbase.rabbitmq.message.DocumentMessage;
+import dev.enes.mindbase.rabbitmq.producer.DocumentProducer;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class DocumentIngestionService {
+    private final DocumentProducer documentProducer;
 
-    private final VectorStore vectorStore;
-    @Value("${mindbase.rules.filepath:classpath:kurallar.txt}")
-    private Resource rulesFile;
-
-    public DocumentIngestionService(VectorStore vectorStore) {
-        this.vectorStore = vectorStore;
+    public DocumentIngestionService(DocumentProducer documentProducer) {
+        this.documentProducer = documentProducer;
     }
 
-    public int loadRulesFromFile() throws IOException {
-        return readBreakSave(rulesFile);
-    }
-
-    public int processAndStoreFile(MultipartFile file) throws IOException {
-        return readBreakSave(file.getResource());
-    }
-
-    private int readBreakSave(Resource resource) throws IOException {
-
+    public void queueFileForProcessing(MultipartFile file) throws IOException {
         String tenantId = TenantContext.getTenantId();
+        if (tenantId == null) throw new IllegalStateException("Tenant kimliği bulunamadı.");
 
-        if (tenantId == null) {
-            throw new IllegalStateException("Tenant ID bulunamadı! Dosya yüklenemez.");
-        }
+        String fileContent = new String(file.getBytes(), StandardCharsets.UTF_8);
 
-        TextReader textReader = new TextReader(resource);
-        List<Document> documents = textReader.get();
-
-        for (Document doc : documents){
-            doc.getMetadata().put("tenantId", tenantId);
-        }
-
-        TokenTextSplitter splitter = new TokenTextSplitter();
-        List<Document> chunks = splitter.apply(documents);
-        vectorStore.accept(chunks);
-        return chunks.size();
+        DocumentMessage message = new DocumentMessage(
+                fileContent,
+                file.getOriginalFilename(),
+                tenantId
+        );
+        documentProducer.sendToQueue(message);
     }
+
 }
